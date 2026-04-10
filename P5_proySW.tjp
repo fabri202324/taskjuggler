@@ -5,7 +5,7 @@
  * some elements of it
  */
 
-project pSix "Web Game"  2025-12-15 +5m {
+project pSix "Web Game"  2025-12-15 +6m {
   # Set the default time zone for the project. If not specified, UTC
   # is used.
   timezone "Europe/Paris"
@@ -70,7 +70,9 @@ resource dev3 "Peter Green" {
 }
 resource a736857 "Fabrizio Bryan Duarte" {
   email "a736857@unizar.es"
-  workinghours mon - fri 09:00 - 13:00
+  limits {
+    dailymax 4h
+  }
 }
 
 # Now we specify the work packages. The whole project is described as
