@@ -19,7 +19,7 @@ project pSix "Web Game"  2025-12-15 +5m {
   # the project reports. If not specified, the current day will be
   # used, but this will likely be outside of the project range, so it
   # can't be seen in the reports.
-  now 2026-02-25-13:00
+  now 2026-04-10-13:00
   # The currency for all money values is the US Dollar.
   currency "EUR"
 
@@ -68,6 +68,10 @@ resource dev2 "Samantha Müller" {
 resource dev3 "Peter Green" {
   email "kkk@unizar.es"
 }
+resource a736857 "Fabrizio Bryan Duarte" {
+  email "a736857@unizar.es"
+  workinghours mon - fri 09:00 - 13:00
+}
 
 # Now we specify the work packages. The whole project is described as
 # a task that contains subtasks. These subtasks are then broken down
@@ -115,7 +119,7 @@ task WMGame "Web & Mobile Game" {
     }
     task tbackDev "Back development" {
       effort 20d
-      allocate dev1, dev2
+      allocate dev1, dev2, a736857
       depends WMGame.tback.tlogic
     }
   }
@@ -134,10 +138,15 @@ task WMGame "Web & Mobile Game" {
         alert yellow
         summary "The tool used for the GUI design has given me a lot of problems. I recommend to look for other one."
       }
+      journalentry 2026-04-10 "Design review for mobile adaptation" {
+        author a736857
+        alert green
+        summary "Reviewed reusable web UI components to speed up the mobile version."
+      }
     }
     task tFEc "Web Front End Construction" {
       effort 15d
-      allocate dev2, dev3
+      allocate dev2, dev3, a736857
       depends WMGame.twebF.tGUId
     }
     task tFEt "Web Front End Test" {
@@ -147,13 +156,58 @@ task WMGame "Web & Mobile Game" {
     }    
   }
 
+  task tmobF "Mobile Front End" {
+    purge chargeset
+    chargeset mFront
+    responsible a736857
+    depends WMGame.twebF.tGUId
+    task tmobDesign "Mobile UX adaptation" {
+      effort 6d
+      allocate a736857, dev3
+    }
+    task tmobImpl "Mobile Front End Construction" {
+      effort 12d
+      allocate a736857, dev2
+      depends WMGame.tmobF.tmobDesign
+    }
+    task tmobTest "Mobile Front End Test" {
+      effort 5d
+      allocate a736857, dev1
+      depends WMGame.tmobF.tmobImpl
+    }
+  }
+
+  task tcloud "Back End Cloud Deployment" {
+    purge chargeset
+    chargeset back
+    responsible dev1
+    depends WMGame.tback.tbackDev
+    task tcloudEval "Cloud provider evaluation" {
+      effort 4d
+      allocate dev1, boss
+    }
+    task tcloudDec "Cloud deployment decision" {
+      effort 2d
+      allocate boss, a736857
+      depends WMGame.tcloud.tcloudEval
+    }
+    task tcloudDep "Cloud deployment implementation" {
+      effort 6d
+      allocate dev1, a736857
+      depends WMGame.tcloud.tcloudDec
+    }
+  }
+
   task ttest "Acceptance tests" {
       effort 10d
+      start 2026-05-15
       allocate boss
       allocate dev2
       actual:effort 20d
       depends WMGame.twebF
+      depends WMGame.tmobF
       depends WMGame.tback
+      depends WMGame.tcloud
       }
 
     
@@ -223,6 +277,12 @@ textreport frame "" {
     formats html
     center '<[report id="overview"]>'
   }
+
+  textreport planOvervi "InitialPlan" {
+    formats html
+    title "Initial Plan"
+    center '<[report id="initialPlan"]>'
+  }
   
   textreport "Status" {
     formats html
@@ -263,6 +323,19 @@ taskreport overview "" {
           revenue, chart { ${TaskTip} }
   # For this report we like to have the abbreviated weekday in front
   # of the date. %a is the tag for this.
+  timeformat "%a %Y-%m-%d"
+  loadunit days
+  hideresource @all
+  balance cost rev
+  caption 'All effort values are in man days.'
+}
+
+taskreport initialPlan "" {
+  scenarios plan
+  headline "Initial Project Plan"
+  columns bsi { title 'WBS' },
+          name, start, end, effort, cost,
+          revenue, chart { ${TaskTip} }
   timeformat "%a %Y-%m-%d"
   loadunit days
   hideresource @all
